@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>可愛文青行事曆</title>
+<style>
+body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    margin: 0;
+    padding: 40px;
+    color: #444;
+    background: linear-gradient(135deg, #ffe4ee 0%, #ffffff 50%, #f0e5ff 100%);
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* 可愛貼紙漂浮背景 */
+.decor {
+    position: absolute;
+    width: 50px;
+    opacity: 0.3;
+    animation: float 6s ease-in-out infinite alternate;
+    pointer-events: none; /* 不影響操作 */
+}
+
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg);}
+    50% { transform: translateY(-15px) rotate(5deg);}
+    100% { transform: translateY(0px) rotate(0deg);}
+}
+
+/* 背景小貼紙 */
+.decor1 { top: 20px; left: 30px; }
+.decor2 { top: 120px; right: 60px; }
+.decor3 { bottom: 90px; left: 80px; }
+.decor4 { bottom: 160px; right: 140px; }
+.decor5 { top: 50px; right: 200px; }
+.decor6 { bottom: 200px; left: 250px; }
+
+/* 月曆標題 */
+.calendar-header {
+    background: #ffe4ee;
+    width: 420px;
+    margin: auto;
+    padding: 25px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    position: relative;
+    z-index: 1;
+}
+.month-title {
+    font-size: 34px;
+    font-weight: bold;
+    color: #ff729f;
+    margin-bottom: 12px;
+}
+.switch-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 14px;
+    background: #ff9fc2;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0 6px;
+    transition: 0.25s;
+}
+.switch-btn:hover { background: #ff7ea9; }
+
+/* 行事曆卡片 */
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    width: 950px;
+    margin: 35px auto;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    position: relative;
+    z-index: 1;
+}
+
+/* 輸入欄與按鈕 */
+.input-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.left-inputs label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+input[type="date"], input[type="time"], input[type="text"] {
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    margin-right: 10px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+input:focus {
+    border-color: #ff91b5;
+    box-shadow: 0 0 5px rgba(255,145,181,0.6);
+    outline: none;
+}
+
+.btn-area {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.25s;
+}
+.add-btn { background: #ff85af; color: white; }
+.add-btn:hover { background: #ff6f9d; }
+.cancel-btn { background: #ffb5c9; color: white; }
+.cancel-btn:hover { background: #ffa2ba; }
+.edit-btn { background: #ffd699; color: white; }
+.edit-btn:hover { background: #ffc066; }
+.priority-btn { background: #ff6f9d; color: white; }
+.priority-btn:hover { background: #ff4e7a; }
+.clearall-btn { background: #d0d0d0; color: white; }
+.clearall-btn:hover { background: #a8a8a8; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+}
+th, td {
+    border-bottom: 1px solid #e5e5e5;
+    text-align: center;
+    padding: 14px;
+    font-size: 15px;
+}
+th { background: #ffe4ee; }
+
+/* 小圖示 */
+.note-icon { font-size: 22px; }
+
+/* 勾選完成劃掉 */
+.done { text-decoration: line-through; opacity: 0.4; transition: 0.6s ease; }
+
+/* 新增彈跳動畫 */
+.bounce { animation: bounceIn 0.5s ease; }
+@keyframes bounceIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+/* 選中列高亮 */
+.selected { background-color: #ffe0f0; }
+</style>
+</head>
+<body>
+
+<!-- 可愛貼紙背景 -->
+<img src="stickers/cute_coffee.png" class="decor decor1">
+<img src="stickers/cute_book.png" class="decor decor2">
+<img src="stickers/cute_plant.png" class="decor decor3">
+<img src="stickers/cute_pen.png" class="decor decor4">
+<img src="stickers/cute_candle.png" class="decor decor5">
+<img src="stickers/cute_cat.png" class="decor decor6">
+
+<!-- 月曆 -->
+<div class="calendar-header">
+    <div class="month-title" id="month-title">2025 年 1 月</div>
+    <button class="switch-btn" onclick="changeMonth(-1)">← 上個月</button>
+    <button class="switch-btn" onclick="changeMonth(1)">下個月 →</button>
+</div>
+
+<!-- 行事曆卡片 -->
+<div class="card">
+    <div class="input-row">
+        <div class="left-inputs">
+            <label>日期：<input type="date" id="date"></label>
+            <label>時間：<input type="time" id="time"></label>
+            <label>事項：<input type="text" id="task" placeholder="輸入待辦事項"></label>
+        </div>
+        <div class="btn-area">
+            <button class="btn add-btn" onclick="addEvent()">＋新增</button>
+            <button class="btn cancel-btn" onclick="cancelAction()">取消</button>
+            <button class="btn edit-btn" onclick="editEvent()">編輯</button>
+            <button class="btn priority-btn" onclick="togglePriority()">標記優先</button>
+            <button class="btn clearall-btn" onclick="clearAll()">清空全部</button>
+        </div>
+    </div>
+
+    <table id="calendar-table">
+        <tr>
+            <th>完成</th>
+            <th>日期</th>
+            <th>時間</th>
+            <th>事項</th>
+        </tr>
+    </table>
+</div>
+
+<script>
+// 目前功能 JS 保留原本升級版
+let today = new Date();
+let currentYear = today.getFullYear();
+let currentMonth = today.getMonth();
+let selectedRow = null;
+
+function updateMonthTitle() {
+    document.getElementById("month-title").textContent =
+        `${currentYear} 年 ${currentMonth+1} 月`;
+}
+updateMonthTitle();
+
+function changeMonth(direction){
+    currentMonth += direction;
+    if(currentMonth<0){ currentMonth=11; currentYear--; }
+    if(currentMonth>11){ currentMonth=0; currentYear++; }
+    updateMonthTitle();
+}
+
+function addEvent(){
+    const date=document.getElementById("date").value;
+    const time=document.getElementById("time").value;
+    const task=document.getElementById("task").value;
+    if(!date || !time || !task){ alert("請填寫完整資訊！"); return; }
+
+    const table=document.getElementById("calendar-table");
+    const row=table.insertRow(-1);
+    row.classList.add("bounce");
+
+    row.innerHTML=`
+        <td><input type="checkbox" class="done-checkbox" onclick="markDone(this)"></td>
+        <td>${date}</td>
+        <td>${time}</td>
+        <td><span class="note-icon">📒</span> <span class="task-text">${task}</span></td>
+    `;
+
+    row.onclick = function(e){
+        if(e.target.tagName.toLowerCase() === "input") return;
+        if(selectedRow) selectedRow.classList.remove("selected");
+        selectedRow = row;
+        row.classList.add("selected");
+    };
+    clearInput();
+}
+
+function markDone(checkbox){
+    const row=checkbox.parentElement.parentElement;
+    const taskText=row.querySelector(".task-text");
+    if(checkbox.checked){ taskText.classList.add("done"); }
+    else{ taskText.classList.remove("done"); }
+}
+
+function cancelAction(){
+    if(selectedRow){
+        selectedRow.remove();
+        selectedRow = null;
+    } else { clearInput(); }
+}
+
+function editEvent(){
+    if(selectedRow){
+        document.getElementById("date").value = selectedRow.cells[1].textContent;
+        document.getElementById("time").value = selectedRow.cells[2].textContent;
+        document.getElementById("task").value = selectedRow.querySelector(".task-text").textContent;
+    } else { alert("請先選擇要編輯的列"); }
+}
+
+function togglePriority(){
+    if(selectedRow){
+        if(selectedRow.style.backgroundColor === 'rgba(255,111,157,0.5)'){
+            selectedRow.style.backgroundColor = '';
+        } else {
+            selectedRow.style.backgroundColor = 'rgba(255,111,157,0.5)';
+        }
+    } else { alert("請先選擇列來標記優先"); }
+}
+
+function clearAll(){
+    const table=document.getElementById("calendar-table");
+    while(table.rows.length>1){ table.deleteRow(1); }
+    selectedRow = null;
+}
+
+function clearInput(){
+    document.getElementById("date").value="";
+    document.getElementById("time").value="";
+    document.getElementById("task").value="";
+}
+</script>
+</body>
+</html>
