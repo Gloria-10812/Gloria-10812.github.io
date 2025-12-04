@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>可愛風大月曆 & 行事曆</title>
+
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background: url('https://i.imgur.com/0Q9QZ0H.png');
+            background-size: cover;
+            padding: 40px;
+            margin: 0;
+            color: #444;
+        }
+
+        /* 大月曆卡片 */
+        .calendar-header {
+            background: rgba(255, 255, 255, 0.85);
+            width: 420px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .month-title {
+            font-size: 34px;
+            font-weight: bold;
+            color: #ff729f;
+            margin-bottom: 12px;
+        }
+
+        .switch-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 14px;
+            background: #ff9fc2;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 0 6px;
+            transition: 0.25s;
+        }
+
+        .switch-btn:hover {
+            background: #ff7ea9;
+        }
+
+        /* 行事曆卡片 */
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            width: 950px;
+            margin: 35px auto;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        input[type="date"],
+        input[type="time"],
+        input[type="text"] {
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            margin-right: 10px;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: #ff91b5;
+            box-shadow: 0 0 5px rgba(255, 145, 181, 0.6);
+            outline: none;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 6px;
+            transition: 0.25s;
+        }
+
+        .add-btn {
+            background: #ff85af;
+            color: white;
+        }
+        .add-btn:hover {
+            background: #ff6f9d;
+        }
+
+        .cancel-btn {
+            background: #ffb5c9;
+            color: #fff;
+        }
+        .cancel-btn:hover {
+            background: #ffa2ba;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #e5e5e5;
+            text-align: center;
+            padding: 14px;
+        }
+
+        th {
+            background: #ffe4ee;
+            color: #444;
+            font-size: 15px;
+        }
+
+        tr:hover {
+            background: #fff7fb;
+        }
+
+        .done-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            transform: scale(1.15);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 大月曆區 -->
+    <div class="calendar-header">
+        <div class="month-title" id="month-title">2025 年 1 月</div>
+        <button class="switch-btn" onclick="changeMonth(-1)">← 上個月</button>
+        <button class="switch-btn" onclick="changeMonth(1)">下個月 →</button>
+    </div>
+
+    <!-- 行事曆功能區 -->
+    <div class="card">
+
+        <label>日期：<input type="date" id="date"></label>
+        <label>時間：<input type="time" id="time"></label>
+        <label>事項：<input type="text" id="task" placeholder="輸入事項"></label>
+
+        <button class="btn add-btn" onclick="addEvent()">＋新增</button>
+        <button class="btn cancel-btn" onclick="clearInput()">取消</button>
+
+        <table id="calendar-table">
+            <tr>
+                <th>完成</th>
+                <th>日期</th>
+                <th>時間</th>
+                <th>事項</th>
+            </tr>
+        </table>
+
+    </div>
+
+<script>
+    // 初始月份（今天）
+    let today = new Date();
+    let currentYear = today.getFullYear();
+    let currentMonth = today.getMonth(); // 0 = 一月
+
+    // 更新大月曆標題
+    function updateMonthTitle() {
+        const title = document.getElementById("month-title");
+        title.textContent = `${currentYear} 年 ${currentMonth + 1} 月`;
+    }
+
+    // 切換月份
+    function changeMonth(direction) {
+        currentMonth += direction;
+
+        if (currentMonth < 0) { 
+            currentMonth = 11; 
+            currentYear--;
+        }
+        if (currentMonth > 11) { 
+            currentMonth = 0; 
+            currentYear++;
+        }
+
+        updateMonthTitle();
+    }
+
+    updateMonthTitle();
+
+    // 新增行事曆項目
+    function addEvent() {
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
+        const task = document.getElementById("task").value;
+
+        if (!date || !time || !task) {
+            alert("請填寫完整資訊！");
+            return;
+        }
+
+        const table = document.getElementById("calendar-table");
+        const row = table.insertRow(-1);
+
+        row.innerHTML = `
+            <td><input type="checkbox" class="done-checkbox"></td>
+            <td>${date}</td>
+            <td>${time}</td>
+            <td>${task}</td>
+        `;
+
+        clearInput();
+    }
+
+    function clearInput() {
+        document.getElementById("date").value = "";
+        document.getElementById("time").value = "";
+        document.getElementById("task").value = "";
+    }
+</script>
+
+</body>
+</html>
