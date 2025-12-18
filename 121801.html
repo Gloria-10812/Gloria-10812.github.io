@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>我的行事曆</title>
+
+<style>
+body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    margin: 0;
+    padding: 40px;
+    color: #444;
+    background: linear-gradient(135deg, #ffe4ee 0%, #ffffff 50%, #f0e5ff 100%);
+}
+
+/* ===== 標題 ===== */
+.calendar-header {
+    background: #ffe4ee;
+    max-width: 420px;
+    margin: auto;
+    padding: 25px;
+    border-radius: 20px;
+    text-align: center;
+}
+.month-title {
+    font-size: 34px;
+    font-weight: bold;
+    color: #ff729f;
+}
+.switch-btn {
+    padding: 8px 14px;
+    border-radius: 14px;
+    border: none;
+    background: #ff9fc2;
+    color: white;
+    cursor: pointer;
+}
+
+/* ===== 卡片 ===== */
+.card {
+    background: white;
+    max-width: 950px;
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 20px;
+}
+
+/* ===== 輸入 ===== */
+.input-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+input {
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+}
+.btn {
+    padding: 10px 16px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+}
+.add-btn { background:#ff85af; color:white; }
+.cancel-btn { background:#ffb5c9; color:white; }
+.edit-btn { background:#ffd699; color:white; }
+.priority-btn { background:#ff6f9d; color:white; }
+.clearall-btn { background:#d0d0d0; color:white; }
+
+/* ===== 表格 ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+th { background: #ffe4ee; }
+
+/* ===== 狀態 ===== */
+.done {
+    text-decoration: line-through;
+    opacity: 0.4;
+}
+.selected {
+    background-color: #ffe0f0;
+}
+
+/* ===== 優先標籤 ===== */
+.priority-tag {
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 12px;
+    background: #ff6f9d;
+    color: white;
+}
+
+/* ===== 刪除 ===== */
+.delete-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 4px 8px;
+    background: #ff6f9d;
+    color: white;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="calendar-header">
+    <div class="month-title" id="month-title"></div>
+    <button class="switch-btn" onclick="changeMonth(-1)">← 上個月</button>
+    <button class="switch-btn" onclick="changeMonth(1)">下個月 →</button>
+</div>
+
+<div class="card">
+
+    <div class="input-row">
+        <div>
+            <input type="date" id="date">
+            <input type="time" id="time">
+            <input type="text" id="task" placeholder="輸入事項">
+        </div>
+        <div>
+            <button class="btn add-btn" onclick="addEvent()">＋新增</button>
+            <button class="btn edit-btn" onclick="editEvent()">編輯</button>
+            <button class="btn priority-btn" onclick="togglePriority()">⭐ 優先</button>
+            <button class="btn cancel-btn" onclick="cancelAction()">取消</button>
+            <button class="btn clearall-btn" onclick="clearAll()">清空</button>
+        </div>
+    </div>
+
+    <div style="margin-top:15px;">
+        <button class="btn" onclick="setFilter('all')">📋 全部</button>
+        <button class="btn" onclick="setFilter('todo')">⏳ 未完成</button>
+        <button class="btn" onclick="setFilter('priority')">⭐ 優先</button>
+    </div>
+
+    <table id="calendar-table">
+        <tr>
+            <th>完成</th>
+            <th>日期</th>
+            <th>時間</th>
+            <th>事項</th>
+            <th>操作</th>
+        </tr>
+    </table>
+
+</div>
+
+<script>
+let today = new Date();
+let currentYear = today.getFullYear();
+let currentMonth = today.getMonth();
+let selectedRow = null;
+let currentFilter = "all";
+
+/* ===== 月份 ===== */
+function updateMonthTitle(){
+    document.getElementById("month-title").textContent =
+        `${currentYear} 年 ${currentMonth+1} 月`;
+}
+updateMonthTitle();
+
+function changeMonth(d){
+    currentMonth += d;
+    if(currentMonth < 0){ currentMonth=11; currentYear--; }
+    if(currentMonth >11){ currentMonth=0; currentYear++; }
+    updateMonthTitle();
+}
+
+/* ===== 排序 ===== */
+function sortTable(){
+    const table = document.getElementById("calendar-table");
+    const rows = Array.from(table.rows).slice(1);
+
+    rows.sort((a,b)=>{
+        const dA = new Date(`${a.cells[1].textContent} ${a.cells[2].textContent}`);
+        const dB = new Date(`${b.cells[1].textContent} ${b.cells[2].textContent}`);
+        return dA - dB;
+    });
+    rows.forEach(r=>table.appendChild(r));
+}
+
+/* ===== 篩選 ===== */
+function setFilter(type){
+    currentFilter = type;
+    applyFilter();
+}
+function applyFilter(){
+    const table = document.getElementById("calendar-table");
+    for(let i=1;i<table.rows.length;i++){
+        const row = table.rows[i];
+        const done = row.querySelector(".done-checkbox").checked;
+        const priority = row.querySelector(".priority-tag").style.display==="inline-block";
+        let show = true;
+        if(currentFilter==="todo") show = !done;
+        if(currentFilter==="priority") show = priority;
+        row.style.display = show ? "" : "none";
+    }
+}
+
+/* ===== 儲存 ===== */
+function saveEvents(){
+    const table = document.getElementById("calendar-table");
+    const data=[];
+    for(let i=1;i<table.rows.length;i++){
+        const r=table.rows[i];
+        data.push({
+            date:r.cells[1].textContent,
+            time:r.cells[2].textContent,
+            task:r.querySelector(".task-text").textContent,
+            done:r.querySelector(".done-checkbox").checked,
+            priority:r.querySelector(".priority-tag").style.display==="inline-block"
+        });
+    }
+    localStorage.setItem("calendarEvents",JSON.stringify(data));
+}
+
+/* ===== 載入 ===== */
+function loadEvents(){
+    const data=JSON.parse(localStorage.getItem("calendarEvents")||"[]");
+    data.forEach(e=>addEventRow(e));
+    sortTable();
+    applyFilter();
+}
+
+/* ===== 新增列 ===== */
+function addEventRow(e){
+    const table=document.getElementById("calendar-table");
+    const row=table.insertRow(-1);
+    row.innerHTML=`
+        <td><input type="checkbox" class="done-checkbox"></td>
+        <td>${e.date}</td>
+        <td>${e.time}</td>
+        <td>
+            <span class="task-text">${e.task}</span>
+            <span class="priority-tag" style="display:${e.priority?'inline-block':'none'}">⭐ 優先</span>
+        </td>
+        <td><button class="delete-btn">🗑️</button></td>
+    `;
+
+    const checkbox=row.querySelector(".done-checkbox");
+    checkbox.checked=e.done;
+    if(e.done) row.querySelector(".task-text").classList.add("done");
+
+    checkbox.onchange=()=>{
+        row.querySelector(".task-text").classList.toggle("done",checkbox.checked);
+        saveEvents(); applyFilter();
+    };
+
+    row.onclick=(ev)=>{
+        if(ev.target.tagName==="BUTTON"||ev.target.tagName==="INPUT")return;
+        if(selectedRow)selectedRow.classList.remove("selected");
+        selectedRow=row; row.classList.add("selected");
+    };
+
+    row.querySelector(".delete-btn").onclick=()=>{
+        row.remove(); selectedRow=null; saveEvents();
+    };
+}
+
+/* ===== 操作 ===== */
+function addEvent(){
+    const e={
+        date:date.value,
+        time:time.value,
+        task:task.value,
+        done:false,
+        priority:false
+    };
+    if(!e.date||!e.time||!e.task){alert("請填完整");return;}
+    addEventRow(e);
+    saveEvents(); sortTable(); applyFilter();
+    date.value=time.value=task.value="";
+}
+
+function editEvent(){
+    if(!selectedRow){alert("請選一列");return;}
+    date.value=selectedRow.cells[1].textContent;
+    time.value=selectedRow.cells[2].textContent;
+    task.value=selectedRow.querySelector(".task-text").textContent;
+}
+
+function togglePriority(){
+    if(!selectedRow){alert("請選一列");return;}
+    const tag=selectedRow.querySelector(".priority-tag");
+    tag.style.display = tag.style.display==="inline-block"?"none":"inline-block";
+    saveEvents(); applyFilter();
+}
+
+function cancelAction(){
+    date.value=time.value=task.value="";
+}
+
+function clearAll(){
+    const table=document.getElementById("calendar-table");
+    while(table.rows.length>1)table.deleteRow(1);
+    localStorage.clear();
+}
+
+loadEvents();
+</script>
+
+</body>
+</html>
